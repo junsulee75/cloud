@@ -1,7 +1,5 @@
 # minikube
 
-# System information 
-
 ## My minikube environment
 On an old Windows thinkpad laptop with 24 GB memory, `Fedora` VMware VM.     
 Starting `minikube` by `KVM` on the Fedora VM.     
@@ -10,16 +8,11 @@ Starting `minikube` by `KVM` on the Fedora VM.
 ## Operations
 ### Connect to minikube VM host
 
-From mac,  
 ```
-$ alias ps01='ssh root@192.168.1.110 -p 10001'    # password
-$ ps01
-On ps01
-# ssh junsulee@fedora # password
-On Fedora
-sudo su -    # password
+ssh junsulee@fedora # login to fedora VM
+sudo su -  # for operations needing root permission
 ```
-### start
+### start minikube
 
 - Give KVM authority to users. give `libvirt` group to users.   
 Necessary to start `minikube` 
@@ -124,7 +117,7 @@ minikube_start
 minikube dashboard   ## works in fedora GUI. Opening web browser
 ```
 
-## Outlook 
+## System Outlook 
 
 ```
 [junsulee@fedora kube]$ kubectl get all

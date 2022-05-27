@@ -1,8 +1,8 @@
 
-# [Openshift]
+# Openshift
 
-
-#### Login to openshift on server 
+## Operations
+### Login to openshift on server 
 
 ```
 [root@bastion ~]# oc get all
@@ -198,7 +198,7 @@ NAME                           HOST/PORT                   PATH   SERVICES      
 route.route.openshift.io/cpd   cpd-sandy.apps.js.ocp.adl          ibm-nginx-svc   ibm-nginx-https-port   passthrough/Redirect   None
 ```
 
-#### Login using Openshift CLI
+### Login using Openshift CLI
 - [CLI download reference](https://access.redhat.com/downloads/content/290)
 - Give execution permiossions
 ```
@@ -273,16 +273,7 @@ replicaset.apps/nfs-client-provisioner-5596f5b9f8   1         1         1       
 
 
 
-#### `kubectl` vs `oc`
 
-[Differences Between oc and kubectl](https://docs.openshift.com/container-platform/3.11/cli_reference/differences_oc_kubectl.html)   
-
-```
-[root@bastion ~]# ls -al /usr/bin/kubectl
--rwxr-xr-x. 2 root root 74680680 Oct 12  2021 /usr/bin/kubectl
-[root@bastion ~]# ls -al /usr/bin/oc
--rwxr-xr-x. 2 root root 74680680 Oct 12  2021 /usr/bin/oc
-```
 #### Configuration   
 
 ```
@@ -340,11 +331,24 @@ users:
 oc get svc
 ```
 
-### MISC. 
+## MISC.   
+
+### `kubectl` vs `oc`
+
+[Differences Between oc and kubectl](https://docs.openshift.com/container-platform/3.11/cli_reference/differences_oc_kubectl.html)   
+
+```
+[root@bastion ~]# ls -al /usr/bin/kubectl
+-rwxr-xr-x. 2 root root 74680680 Oct 12  2021 /usr/bin/kubectl
+[root@bastion ~]# ls -al /usr/bin/oc
+-rwxr-xr-x. 2 root root 74680680 Oct 12  2021 /usr/bin/oc
+```
+
+
 ```
 oc get deploy
 ```
-> When creating services, firstly creaing a `deployment`, then `pods`, then `service`.    
+> When creating services, firstly creating a `deployment`, then `pods`, then `service`.    
 And related service to deployment.      
 
 
