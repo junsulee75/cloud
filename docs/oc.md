@@ -1,5 +1,10 @@
 
 # Openshift
+## Access information
+
+OCP GUI Console :   
+User : kubeadmin
+Find the password : cat /root/ocp46/auth/kubeadmin-password     
 
 ## Operations
 ### Login to openshift on server 
@@ -8,7 +13,7 @@
 [root@bastion ~]# oc get all
 error: You must be logged in to the server (Unauthorized)
 
-[root@bastion ~]# oc login -u kubeadmin -p gjLwx-7xGuF-Pxv8j-qvG2d https://localhost:6443
+[root@bastion ~]# oc login -u kubeadmin -p KLECG-2dDC6-JfS8r-x4iY8 https://localhost:6443
 
 Login successful.
 
