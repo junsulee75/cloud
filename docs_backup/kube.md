@@ -45,19 +45,6 @@ Kubenetes (aka k8s)
 ### Context
 - Consists of the clustername and namespace that the current user connects to.      
 
-### service
-- Each pod has its own IP address     
-- Service is a kind of LB(Load balancer)     
-- Service is an another api object in K8s.   
-- Service is created referring `Label` to connect a `Deployment`.         
-- `Ingress` for http, https. and distribute to multiple services.      
-- Types
- ClusterIP : The default type; provides internal access only.    
- NodePort  : allocate a specific node port which needs to be opened on the firewall.      
- LoadBalancer : Currently only implented in public cloud       
- ExternalName : a relatively new object that works on DNS names; Redirection is happening at a DNS level.       
- Service without selector : use for direct connections based on IP/port, without an endpoint. Useful for DB connection or between namespaces.    
-
 ## Reference
 [Kubernetes doc](https://kubernetes.io/docs/home/)
 [crio](https://cri-o.io)
@@ -103,8 +90,6 @@ kubectl get <resources> -o yaml > myresource.yaml  #ex) kubectl get pod -o yaml
 kubectl get deployment.apps
 kubectl get deployment.apps -o yaml
 
-kubectl edit deployments.apps <app name>
-
 # api
 kubectl api-resources
 ex) kubectl api-resources --api-group=db2u.databases.ibm.com 
@@ -116,8 +101,7 @@ kubectl explain pod.spec
 kubectl explain pod.spec.containers
 ex) kubectl explain db2uclusters  
 ex) kubectl explain db2uclusters.spec  
-ex) kubectl explain db2uclusters.spec.environment  
-kubectl explain deployment.spec.strategy 
+ex) kubectl explain db2uclusters.spec.environment   
 
 
 # Namespace
@@ -131,10 +115,8 @@ ex) current namespace
 CURRENT   NAME       CLUSTER    AUTHINFO   NAMESPACE
 *         minikube   minikube   minikube   default
 
-
-# scale
 ex) kubectl edit deployment cmd-nginx
-ex) kubectl scale --replicas=1 deployment cmd-nginx
+ex) kubectl scale --replicas=1 cmd-nginx
 
 # rollout
 kubectl rollout history deployment

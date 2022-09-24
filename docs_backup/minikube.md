@@ -17,9 +17,9 @@ sudo su -  # for operations needing root permission
 - Give KVM authority to users. give `libvirt` group to users.   
 Necessary to start `minikube` 
 ```
-# usermod -aG libvirt junsulee
-# usermod -aG libvirt student
-# grep vmx /proc/cpuinfo    ## should have `vmx` 
+[root@fedora kubernetes]# usermod -aG libvirt junsulee
+[root@fedora kubernetes]# usermod -aG libvirt student
+[root@fedora ~]# grep vmx /proc/cpuinfo    ## should have `vmx` 
 ```
 
 - Start by a non root user      
@@ -46,7 +46,7 @@ example :
 
 When starting after system halt    
 ```
-$ minikube start --memory 4096 --vm-driver=kvm2
+[junsulee@fedora ~]$ minikube start --memory 4096 --vm-driver=kvm2
 * minikube v1.20.0 on Fedora 34
 * minikube 1.22.0 is available! Download it: https://github.com/kubernetes/minikube/releases/tag/v1.22.0
 * To disable this notice, run: 'minikube config set WantUpdateNotification false'
@@ -92,7 +92,7 @@ On vmware configuration, turn on 'Virtualize CPU performance counters'.
 
 #### Error
 ```
-$ minikube_start
+[junsulee@fedora ~]$ minikube_start
 😄  minikube v1.20.0 on Fedora 34
 ✨  Using the kvm2 driver based on existing profile
 👍  Starting control plane node minikube in cluster minikube
@@ -120,7 +120,7 @@ minikube dashboard   ## works in fedora GUI. Opening web browser
 ## System Outlook 
 
 ```
-$ kubectl get all
+[junsulee@fedora kube]$ kubectl get all
 NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   17
 
@@ -132,7 +132,7 @@ $ kubectl cluster-info
 Kubernetes control plane is running at https://192.168.39.235:8443
 KubeDNS is running at https://192.168.39.235:8443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 
-$ kubectl get all -A
+[junsulee@fedora ~]$ kubectl get all -A
 NAMESPACE              NAME                                            READY   STATUS    RESTARTS   AGE
 default                pod/cmd-nginx-57bb5f6747-hznc7                  1/1     Running   1          4d18h
 default                pod/cmd-nginx-57bb5f6747-kmkjr                  1/1     Running   1          4d17h
@@ -175,7 +175,7 @@ kubernetes-dashboard   replicaset.apps/kubernetes-dashboard-968bcb79         1  
 For further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.      
 
 ```
-$ kubectl config view
+[junsulee@fedora ~]$ kubectl config view
 apiVersion: v1
 clusters:
 - cluster:
@@ -223,14 +223,14 @@ https://borysneselovskyi.wordpress.com/2018/02/19/kvm-virtualization-on-top-of-t
 ### 02 Operating containers    
 
 ```
-$ docker run --rm -v /dev/log:/dev/log fedora:latest logger "Message from the container" 
+[junsulee@fedora kube]$ docker run --rm -v /dev/log:/dev/log fedora:latest logger "Message from the container" 
 Unable to find image 'fedora:latest' locally
 latest: Pulling from library/fedora
 70fb9965a23f: Pull complete 
 Digest: sha256:0c18a515203b836ea840f7033a11d6833f9468fda6a99f5a29695cfbaf43f24a
 Status: Downloaded newer image for fedora:latest
 
-$ journalctl |grep container
+[junsulee@fedora kube]$ journalctl |grep container
 ...
 Oct 03 20:40:39 fedora root[52426]: Message from the container
 ```
@@ -241,11 +241,11 @@ Oct 03 20:40:39 fedora root[52426]: Message from the container
 To start from scratch, check existing deployment/pod, then delete.        
 
 ```
-$ kubectl get deployment
+[junsulee@fedora ~]$ kubectl get deployment
 NAME        READY   UP-TO-DATE   AVAILABLE   AGE
 cmd-nginx   1/1     1            1           32d
 
-$ kubectl get pod
+[junsulee@fedora ~]$ kubectl get pod
 NAME                         READY   STATUS    RESTARTS   AGE
 cmd-nginx-57bb5f6747-tv4sb   1/1     Running   0          31s
 ```
@@ -254,18 +254,18 @@ At this time, the pod runs again with different name because of deployment.
 to clear, need to delete deployment together.   
 
 ```
-$ kubectl delete deployment cmd-nginx
+[junsulee@fedora ~]$ kubectl delete deployment cmd-nginx
 deployment.apps "cmd-nginx" deleted
 
-$ kubectl get deployment
+[junsulee@fedora ~]$ kubectl get deployment
 No resources found in default namespace.
 
-$ kubectl get pod
+[junsulee@fedora ~]$ kubectl get pod
 NAME                         READY   STATUS        RESTARTS   AGE
 cmd-nginx-57bb5f6747-tv4sb   0/1     Terminating   0          6m58s
-$ kubectl delete pod cmd-nginx-57bb5f6747-tv4sb
+[junsulee@fedora ~]$ kubectl delete pod cmd-nginx-57bb5f6747-tv4sb
 pod "cmd-nginx-57bb5f6747-tv4sb" deleted
-$ kubectl get pod
+[junsulee@fedora ~]$ kubectl get pod
 No resources found in default namespace.
 ```
 
@@ -274,19 +274,19 @@ No resources found in default namespace.
 
 Creating a pod that does not have a default command becomes abnormal status.   
 ```
-$ kubectl create deployment my-dep --image=busybox
+[junsulee@fedora kube]$ kubectl create deployment my-dep --image=busybox
 deployment.apps/my-dep created
-$ kubectl get pod
+[junsulee@fedora kube]$ kubectl get pod
 NAME                      READY   STATUS              RESTARTS   AGE
 my-dep-68d7dcffc4-fvzsp   0/1     ContainerCreating   0          10s
-$ date;kubectl get pod
+[junsulee@fedora kube]$ date;kubectl get pod
 Sat 17 Sep 2022 13:18:40 AEST
 NAME                      READY   STATUS      RESTARTS   AGE
 my-dep-68d7dcffc4-fvzsp   0/1     Completed   0          22s
 ```
 
 ```
-$ date;kubectl get pod
+[junsulee@fedora kube]$ date;kubectl get pod
 Sat 17 Sep 2022 13:18:48 AEST
 NAME                      READY   STATUS             RESTARTS   AGE
 my-dep-68d7dcffc4-fvzsp   0/1     CrashLoopBackOff   1          30s
@@ -304,7 +304,7 @@ Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s      
 #### Naked pod : not managed by deployment   
 
 ```
-$ cat busybox.yaml
+[junsulee@fedora kube]$ cat busybox.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -318,17 +318,17 @@ spec:
       - sleep
       - "3600" 
 
-$ kubectl create -f busybox.yaml
+[junsulee@fedora kube]$ kubectl create -f busybox.yaml
 pod/busybox2 created
 
-$ kubectl get all
+[junsulee@fedora kube]$ kubectl get all
 NAME           READY   STATUS    RESTARTS   AGE
 pod/busybox2   1/1     Running   0          22s
 
 NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   118d
 
-$ kubectl delete -f busybox.yaml
+[junsulee@fedora kube]$ kubectl delete -f busybox.yaml
 pod "busybox2" deleted
 ```
 
@@ -336,16 +336,16 @@ pod "busybox2" deleted
 
 create an example pod again 
 ```
-$ kubectl create deployment cmd-nginx --image=nginx
+[junsulee@fedora ~]$ kubectl create deployment cmd-nginx --image=nginx
 deployment.apps/cmd-nginx created
-$ kubectl get deployment
+[junsulee@fedora ~]$ kubectl get deployment
 NAME        READY   UP-TO-DATE   AVAILABLE   AGE
 cmd-nginx   0/1     1            0           8s
-$ kubectl get pod
+[junsulee@fedora ~]$ kubectl get pod
 NAME                         READY   STATUS    RESTARTS   AGE
 cmd-nginx-57bb5f6747-bgqz4   1/1     Running   0          15s
 
-$ kubectl get deployment.apps
+[junsulee@fedora work]$ kubectl get deployment.apps
 NAME        READY   UP-TO-DATE   AVAILABLE   AGE
 cmd-nginx   1/1     1            1           18h
 
@@ -354,9 +354,9 @@ cmd-nginx   1/1     1            1           18h
 Create yaml referring existing apps.
 
 ```
-$ kubectl get deployment.apps -o yaml > myngnix.yaml
+[junsulee@fedora work]$ kubectl get deployment.apps -o yaml > myngnix.yaml
 
-$ cat myngnix.yaml
+[junsulee@fedora work]$ cat myngnix.yaml
 apiVersion: v1
 items:
 - apiVersion: apps/v1
@@ -431,9 +431,9 @@ metadata:
 Remove unnecessary parts. ( creationTimestamp, resourceVersion, uid, status etc)     
 
 ```
-$ cp myngnix.yaml myngnix_org.yaml
+[junsulee@fedora work]$ cp myngnix.yaml myngnix_org.yaml
 
-$ cat myngnix.yaml
+[junsulee@fedora work]$ cat myngnix.yaml
 apiVersion: v1
 items:
 - apiVersion: apps/v1
@@ -476,8 +476,8 @@ items:
         schedulerName: default-scheduler
         securityContext: {}
         terminationGracePeriodSeconds: 30
-
-$ diff myngnix_org.yaml myngnix.yaml
+[junsulee@fedora work]$
+[junsulee@fedora work]$ diff myngnix_org.yaml myngnix.yaml
 8d7
 <     creationTimestamp: "2022-06-24T05:14:35Z"
 14,15d12
@@ -516,7 +516,7 @@ $ diff myngnix_org.yaml myngnix.yaml
 Many k8s API Objects are using labels to connect to other objects.     
 
 ```
-$ kubectl get all --show-labels
+[junsulee@fedora work]$ kubectl get all --show-labels
 NAME                             READY   STATUS    RESTARTS   AGE   LABELS
 pod/cmd-nginx-57bb5f6747-bgqz4   1/1     Running   0          20h   app=cmd-nginx,pod-template-hash=57bb5f6747
 
@@ -535,9 +535,9 @@ cmd-nginx-57bb5f6747-bgqz4   1/1     Running   0          20h
 ```
 Set Label
 ```
-$ kubectl label pods cmd-nginx-57bb5f6747-bgqz4 app-
+[junsulee@fedora work]$ kubectl label pods cmd-nginx-57bb5f6747-bgqz4 app-
 pod/cmd-nginx-57bb5f6747-bgqz4 labeled
-$ kubectl get all --show-labels
+[junsulee@fedora work]$ kubectl get all --show-labels
 NAME                             READY   STATUS    RESTARTS   AGE   LABELS
 pod/cmd-nginx-57bb5f6747-6clxd   1/1     Running   0          44s   app=cmd-nginx,pod-template-hash=57bb5f6747
 pod/cmd-nginx-57bb5f6747-bgqz4   1/1     Running   0          20h   pod-template-hash=57bb5f6747
@@ -558,7 +558,7 @@ It means k8s does not look at the pod itself but looking at the `label`.
 
 Display all objects with a specific label.    
 ```
-$ kubectl get all --selector app=cmd-nginx
+[junsulee@fedora work]$ kubectl get all --selector app=cmd-nginx
 NAME                             READY   STATUS    RESTARTS   AGE
 pod/cmd-nginx-57bb5f6747-kmkjr   1/1     Running   0          14m
 
@@ -577,7 +577,7 @@ Better to use with a deployment that monitors and manages a pod.
 `Deployment` specification from `template`.    
 
 ```yaml 
-junsulee@fedora kubernetes]$ cat redis-deploy.yaml
+[junsulee@fedora kubernetes]$ cat redis-deploy.yaml
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
@@ -970,10 +970,7 @@ Events:
   Normal  ScalingReplicaSet  8m51s  deployment-controller  Scaled up replica set rollingnginx-785db9758d to 1
   Normal  ScalingReplicaSet  104s   deployment-controller  Scaled up replica set rollingnginx-58cff98f76 to 1
   Normal  ScalingReplicaSet  62s    deployment-controller  Scaled down replica set rollingnginx-785db9758d to 0
-```
 
-Check version for each revision.    
-```
 
 [junsulee@fedora kubernetes]$ kubectl rollout history deployment rollingnginx --revision=1
 deployment.apps/rollingnginx with revision #1
@@ -982,21 +979,21 @@ Pod Template:
 	pod-template-hash=785db9758d
   Containers:
    nginx:
-    Image:	nginx:1.8     <====
+    Image:	nginx:1.8
     Port:	<none>
     Host Port:	<none>
     Environment:	<none>
     Mounts:	<none>
   Volumes:	<none>
 
-$ kubectl rollout history deployment rollingnginx --revision=2
+[junsulee@fedora kubernetes]$ kubectl rollout history deployment rollingnginx --revision=2
 deployment.apps/rollingnginx with revision #2
 Pod Template:
   Labels:	app=rollingnginx
 	pod-template-hash=58cff98f76
   Containers:
    nginx:
-    Image:	nginx:1.15    <====
+    Image:	nginx:1.15
     Port:	<none>
     Host Port:	<none>
     Environment:	<none>
@@ -1005,9 +1002,8 @@ Pod Template:
 ```
 
 Two replica sets are shown. Old one will be gone eventually.   
-While old replica set is still being displayed, you can do rollback.     
 ```
-$ kubectl get all
+[junsulee@fedora kubernetes]$ kubectl get all
 NAME                                READY   STATUS    RESTARTS   AGE
 pod/busybox2                        1/1     Running   1          72m
 pod/cmd-nginx-57bb5f6747-6clxd      1/1     Running   0          173m
@@ -1026,16 +1022,16 @@ deployment.apps/rollingnginx   1/1     1            1           13m
 NAME                                      DESIRED   CURRENT   READY   AGE
 replicaset.apps/cmd-nginx-57bb5f6747      1         1         1       23h
 replicaset.apps/redis-6fb5b985bc          1         1         1       134m
-replicaset.apps/rollingnginx-58cff98f76   1         1         1       6m17s    <=== new revision   
-replicaset.apps/rollingnginx-785db9758d   0         0         0       13m      <=== old one is emptied.    
+replicaset.apps/rollingnginx-58cff98f76   1         1         1       6m17s    <===
+replicaset.apps/rollingnginx-785db9758d   0         0         0       13m      
 ```
 
 Rollback 
 ```
-$ kubectl rollout undo deployment rollingnginx --to-revision=1
+junsulee@fedora kubernetes]$ kubectl rollout undo deployment rollingnginx --to-revision=1
 deployment.apps/rollingnginx rolled back
 
-$ kubectl get all
+[junsulee@fedora kubernetes]$ kubectl get all
 NAME                                READY   STATUS    RESTARTS   AGE
 pod/busybox2                        1/1     Running   1          76m
 pod/cmd-nginx-57bb5f6747-6clxd      1/1     Running   0          177m
@@ -1055,660 +1051,6 @@ NAME                                      DESIRED   CURRENT   READY   AGE
 replicaset.apps/cmd-nginx-57bb5f6747      1         1         1       23h
 replicaset.apps/redis-6fb5b985bc          1         1         1       138m
 replicaset.apps/rollingnginx-58cff98f76   0         0         0       9m45s
-replicaset.apps/rollingnginx-785db9758d   1         1         1       16m   <==== pod went to old one   
+replicaset.apps/rollingnginx-785db9758d   1         1         1       16m   <====
 
 ```
-
-#### Lab 05 Managing deployment    
-
-Create yaml file only. ( --dry-run  )       
-```
-$ kubectl create deployment lab5-nginx --image=nginx --dry-run --output=yaml > lab5-nginx.yaml
-```
-
-Change.    
-```yaml
-$ cat lab5-nginx.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-  labels:
-    app: lab5-ngnix
-  name: lab5-ngnix
-spec:
-  replicas: 3     ## 1 -> 3
-  selector:
-    matchLabels:
-      app: lab5-ngnix
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: lab5-ngnix
-    spec:
-      containers:
-      - image: ngnix:1.8  ## ngnix : latest version. specify preferred version.    
-        name: ngnix
-        resources: {}
-status: {}
-```
-
-```
-$ kubectl create -f lab5-nginx.yaml  # create
-$ kubectl get all --selector app=lab5-nginx  # list all resources with the tabel   
-
-NAME                              READY   STATUS    RESTARTS   AGE
-pod/lab5-nginx-75588bfdc4-4vkzv   1/1     Running   0          56s
-pod/lab5-nginx-75588bfdc4-78ms9   1/1     Running   0          56s
-pod/lab5-nginx-75588bfdc4-98krb   1/1     Running   0          56s
-
-NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/lab5-nginx   3/3     3            3           56s
-
-NAME                                    DESIRED   CURRENT   READY   AGE
-replicaset.apps/lab5-nginx-75588bfdc4   3         3         3       56s
-
-
-$ kubectl scale deployment lab5-nginx --replicas=4   # increase   
-
-$ kubectl get all --selector app=lab5-nginx
-NAME                              READY   STATUS    RESTARTS   AGE
-pod/lab5-nginx-75588bfdc4-4vkzv   1/1     Running   0          2m15s
-pod/lab5-nginx-75588bfdc4-78ms9   1/1     Running   0          2m15s
-pod/lab5-nginx-75588bfdc4-98krb   1/1     Running   0          2m15s
-pod/lab5-nginx-75588bfdc4-r8m2f   1/1     Running   0          12s
-
-NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/lab5-nginx   4/4     4            4           2m15s
-
-NAME                                    DESIRED   CURRENT   READY   AGE
-replicaset.apps/lab5-nginx-75588bfdc4   4         4         4       2m15s
-```
-
-
-```
-$ kubectl edit deployments.apps lab5-nginx   # change the version  
-...
-      containers:
-      - image: nginx
-...
-
-[root@api.jscp4d.cp.fyre.ibm.com work]# kubectl get all --selector app=lab5-nginx
-NAME                              READY   STATUS    RESTARTS   AGE
-pod/lab5-nginx-75f4f8d9f7-295vn   1/1     Running   0          27s
-pod/lab5-nginx-75f4f8d9f7-7rs9c   1/1     Running   0          17s
-pod/lab5-nginx-75f4f8d9f7-ldcs6   1/1     Running   0          27s
-pod/lab5-nginx-75f4f8d9f7-xl98h   1/1     Running   0          17s
-
-NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/lab5-nginx   4/4     4            4           4m48s
-
-NAME                                    DESIRED   CURRENT   READY   AGE
-replicaset.apps/lab5-nginx-75588bfdc4   0         0         0       4m48s
-replicaset.apps/lab5-nginx-75f4f8d9f7   4         4         4       27s     <===== new version  deployment     
-
-```
-
-### 06 Exposing applications (Networking)      
-
-Create a yaml with multiple pods.     
-Not caring about what the pods do but focusing on how network is organized.      
-```yaml
-$ cat busybox_multi.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: verybusy
-  namespace: default
-spec:
-  containers:
-  - name: busy
-    image: busybox
-    command:
-      - sleep
-      - "3600" 
-  - name: box
-    image: busybox
-    command:
-      - sleep
-      - "3600" 
-
-
-$ kubectl create -f busybox_multi.yaml
-pod/verybusy created
-```
-
-Each pod has its own IP addresses.   
-
-```
-$ kubectl get pods -o wide
-NAME                            READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
-cmd-nginx-57bb5f6747-hznc7      1/1     Running   1          5d23h   172.17.0.5    minikube   <none>           <none>
-cmd-nginx-57bb5f6747-kmkjr      1/1     Running   1          5d23h   172.17.0.3    minikube   <none>           <none>
-lab5-nginx-7777d7964c-5pc68     1/1     Running   0          33m     172.17.0.13   minikube   <none>           <none>
-lab5-nginx-7777d7964c-rkfz2     1/1     Running   0          33m     172.17.0.14   minikube   <none>           <none>
-lab5-nginx-7777d7964c-v9kn6     1/1     Running   0          33m     172.17.0.15   minikube   <none>           <none>
-lab5-nginx-7777d7964c-vdlxm     1/1     Running   0          33m     172.17.0.11   minikube   <none>           <none>
-redis-6fb5b985bc-s6gpq          1/1     Running   0          5d8h    172.17.0.8    minikube   <none>           <none>
-rollingnginx-785db9758d-p5k8v   1/1     Running   0          25h     172.17.0.9    minikube   <none>           <none>
-verybusy                        2/2     Running   0          42s     172.17.0.10   minikube   <none>           <none>      <======
-```
-
-IP address is POD property, not container's.       
-
-```
-$ kubectl describe pod verybusy
-Name:         verybusy
-Namespace:    default
-Priority:     0
-Node:         minikube/192.168.39.25
-Start Time:   Fri, 23 Sep 2022 14:50:30 +1000
-Labels:       <none>
-Annotations:  <none>
-Status:       Running
-IP:           172.17.0.10
-IPs:
-  IP:  172.17.0.10     # <==========
-Containers:
-  busy:
-    Container ID:  docker://995e596ca7c7953c21955db1506f724d57db17251440c397878efed8714a61a2
-    Image:         busybox
-    Image ID:      docker-pullable://busybox@sha256:ad9bd57a3a57cc95515c537b89aaa69d83a6df54c4050fcf2b41ad367bec0cd5
-    Port:          <none>
-    Host Port:     <none>
-    Command:
-      sleep
-      3600
-    State:          Running
-      Started:      Fri, 23 Sep 2022 14:50:44 +1000
-    Ready:          True
-    Restart Count:  0
-    Environment:    <none>
-    Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from default-token-vrnvj (ro)
-  box:
-    Container ID:  docker://e1beec661f02024c461cb72bf8013661a781c8ae1d6d65c5e01936c3ab9e6d08
-    Image:         busybox
-    Image ID:      docker-pullable://busybox@sha256:ad9bd57a3a57cc95515c537b89aaa69d83a6df54c4050fcf2b41ad367bec0cd5
-    Port:          <none>
-    Host Port:     <none>
-    Command:
-      sleep
-      3600
-    State:          Running
-      Started:      Fri, 23 Sep 2022 14:50:50 +1000
-    Ready:          True
-    Restart Count:  0
-    Environment:    <none>
-    Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from default-token-vrnvj (ro)
-Conditions:
-  Type              Status
-  Initialized       True 
-  Ready             True 
-  ContainersReady   True 
-  PodScheduled      True 
-Volumes:
-  default-token-vrnvj:
-    Type:        Secret (a volume populated by a Secret)
-    SecretName:  default-token-vrnvj
-    Optional:    false
-QoS Class:       BestEffort
-Node-Selectors:  <none>
-Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type    Reason     Age    From               Message
-  ----    ------     ----   ----               -------
-  Normal  Scheduled  5m47s  default-scheduler  Successfully assigned default/verybusy to minikube
-  Normal  Pulling    5m41s  kubelet            Pulling image "busybox"
-  Normal  Pulled     5m37s  kubelet            Successfully pulled image "busybox" in 4.068525177s
-  Normal  Created    5m35s  kubelet            Created container busy
-  Normal  Started    5m33s  kubelet            Started container busy
-  Normal  Pulling    5m33s  kubelet            Pulling image "busybox"
-  Normal  Pulled     5m29s  kubelet            Successfully pulled image "busybox" in 3.699821125s
-  Normal  Created    5m27s  kubelet            Created container box
-  Normal  Started    5m26s  kubelet            Started container box
-```
-
-Log into containers and check ip address.  
-Both container shows the same IP address.   
-Note that conatiner is not a virtual machine but an application.       
-
-```
-$ kubectl exec -it verybusy -c busy /bin/sh
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
-/ # 
-/ # ip a
-..
-2: sit0@NONE: <NOARP> mtu 1480 qdisc noop qlen 1000
-    link/sit 0.0.0.0 brd 0.0.0.0
-60: eth0@if61: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue 
-    link/ether 02:42:ac:11:00:0a brd ff:ff:ff:ff:ff:ff
-    inet 172.17.0.10/16 brd 172.17.255.255 scope global eth0     <======
-       valid_lft forever preferred_lft forever
-/ # exit
-
-
-$ kubectl exec -it verybusy -c box /bin/sh
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
-/ # ip ad
-...
-2: sit0@NONE: <NOARP> mtu 1480 qdisc noop qlen 1000
-    link/sit 0.0.0.0 brd 0.0.0.0
-60: eth0@if61: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue 
-    link/ether 02:42:ac:11:00:0a brd ff:ff:ff:ff:ff:ff
-    inet 172.17.0.10/16 brd 172.17.255.255 scope global eth0     <======
-       valid_lft forever preferred_lft forever
-
-
-```
-
-What if one conatiner wants to connect to other container ?    
-It's same as multiple application in a server using internal IP stack, IPC or port forwarding. K8s pos is not different.              
-Pod is ultimate entity having an ip address.      
-
-
-#### Expose a deployment   
-
-```
-[junsulee@fedora kubernetes]$ kubectl get svc
-NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   125d
-[junsulee@fedora kubernetes]$ kubectl get deployment
-NAME           READY   UP-TO-DATE   AVAILABLE   AGE
-cmd-nginx      1/1     1            1           6d
-lab5-nginx     4/4     4            4           105m
-redis          1/1     1            1           5d9h
-rollingnginx   1/1     1            1           26h
-[junsulee@fedora kubernetes]$ kubectl expose deployment rollingnginx --port=80 --target-port=80
-service/rollingnginx exposed
-[junsulee@fedora kubernetes]$ kubectl get svc
-NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
-kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP   125d
-rollingnginx   ClusterIP   10.100.255.163   <none>        80/TCP    4s      <=====
-
-[junsulee@fedora kubernetes]$ kubectl describe svc rollingnginx
-Name:              rollingnginx
-Namespace:         default
-Labels:            app=rollingnginx  <==== service uses Label   
-Annotations:       <none>
-Selector:          app=rollingnginx
-Type:              ClusterIP
-IP Families:       <none>
-IP:                10.100.255.163    <=====
-IPs:               10.100.255.163
-Port:              <unset>  80/TCP   <======
-TargetPort:        80/TCP
-Endpoints:         172.17.0.9:80     <=====
-Session Affinity:  None
-Events:            <none>
-
-[junsulee@fedora kubernetes]$ kubectl get pod -o wide
-NAME                            READY   STATUS    RESTARTS   AGE    IP            NODE       NOMINATED NODE   READINESS GATES
-...
-rollingnginx-785db9758d-p5k8v   1/1     Running   0          26h    172.17.0.9    minikube   <none>           <none>  <====
-...
-```
-
-#### Scaling the deployment will add IP Endpoints as PODs increases.     
-```
-[junsulee@fedora kubernetes]$ kubectl describe svc rollingnginx
-Name:              rollingnginx
-Namespace:         default
-Labels:            app=rollingnginx
-Annotations:       <none>
-Selector:          app=rollingnginx
-Type:              ClusterIP
-IP Families:       <none>
-IP:                10.100.255.163
-IPs:               10.100.255.163
-Port:              <unset>  80/TCP
-TargetPort:        80/TCP
-Endpoints:         172.17.0.12:80,172.17.0.16:80,172.17.0.17:80 + 1 more...     <====
-Session Affinity:  None
-Events:
-  Type     Reason                        Age   From                       Message
-  ----     ------                        ----  ----                       -------
-  Warning  FailedToUpdateEndpointSlices  11s   endpoint-slice-controller  Error updating Endpoint Slices for Service default/rollingnginx: failed to update rollingnginx-5fgpm EndpointSlice for Service default/rollingnginx: Operation cannot be fulfilled on endpointslices.discovery.k8s.io "rollingnginx-5fgpm": the object has been modified; please apply your changes to the latest version and try again
-
-
-[junsulee@fedora kubernetes]$ kubectl get pod -o wide
-NAME                            READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
-...
-rollingnginx-785db9758d-npzw7   1/1     Running   0          3m14s   172.17.0.12   minikube   <none>           <none>
-rollingnginx-785db9758d-p5k8v   1/1     Running   0          26h     172.17.0.9    minikube   <none>           <none>
-rollingnginx-785db9758d-szglg   1/1     Running   0          3m13s   172.17.0.17   minikube   <none>           <none>
-rollingnginx-785db9758d-vpwc7   1/1     Running   0          3m13s   172.17.0.16   minikube   <none>           <none>
-...
-```
-
-Working with yaml file,  it contains everything for service.  
-Not much information.  
-`Label` and `selector` is important.     
-Services is not connect to an one deployment.    
-```
-$ kubectl expose deployment rollingnginx --port=80 --target-port=80 --dry-run -o yaml > svc.yaml
-
-$ cat svc.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  creationTimestamp: null
-  labels:   
-    app: rollingnginx
-  name: rollingnginx
-spec:
-  ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 80
-  selector: 
-    app: rollingnginx
-status:
-  loadBalancer: {}
-```
-
-#### Using DNS in k8s.   
-
-K8s DNS service 
-```
-[junsulee@fedora work]$ kubectl get pods -n kube-system -o wide
-NAME                               READY   STATUS    RESTARTS   AGE    IP              NODE       NOMINATED NODE   READINESS GATES
-coredns-74ff55c5b-qgdjv            1/1     Running   3          125d   172.17.0.4      minikube   <none>           <none>        <==========
-etcd-minikube                      1/1     Running   35         125d   192.168.39.25   minikube   <none>           <none>
-kube-apiserver-minikube            1/1     Running   83         125d   192.168.39.25   minikube   <none>           <none>
-kube-controller-manager-minikube   1/1     Running   11         125d   192.168.39.25   minikube   <none>           <none>
-kube-proxy-x48k4                   1/1     Running   3          125d   192.168.39.25   minikube   <none>           <none>
-kube-scheduler-minikube            1/1     Running   3          125d   192.168.39.25   minikube   <none>           <none>
-storage-provisioner                1/1     Running   139        125d   192.168.39.25   minikube   <none>           <none>
-
-
-[junsulee@fedora work]$ kubectl describe pod coredns-74ff55c5b-qgdjv -n kube-system
-Name:                 coredns-74ff55c5b-qgdjv
-Namespace:            kube-system
-Priority:             2000000000
-Priority Class Name:  system-cluster-critical
-Node:                 minikube/192.168.39.25
-Start Time:           Sat, 21 May 2022 15:12:15 +1000
-Labels:               k8s-app=kube-dns
-                      pod-template-hash=74ff55c5b
-Annotations:          <none>
-Status:               Running
-IP:                   172.17.0.4
-IPs:
-  IP:           172.17.0.4
-Controlled By:  ReplicaSet/coredns-74ff55c5b
-Containers:
-  coredns:
-    Container ID:  docker://2f577513304ad5e32f49f69d054f26b5a9d9c0b595dce7741bca319b7817f486
-    Image:         k8s.gcr.io/coredns:1.7.0
-    Image ID:      docker-pullable://k8s.gcr.io/coredns@sha256:73ca82b4ce829766d4f1f10947c3a338888f876fbed0540dc849c89ff256e90c
-    Ports:         53/UDP, 53/TCP, 9153/TCP
-    Host Ports:    0/UDP, 0/TCP, 0/TCP
-    Args:
-      -conf
-      /etc/coredns/Corefile
-    State:          Running
-      Started:      Sun, 18 Sep 2022 06:33:23 +1000
-    Last State:     Terminated
-      Reason:       Error
-      Exit Code:    255
-      Started:      Sat, 17 Sep 2022 12:10:25 +1000
-      Finished:     Sun, 18 Sep 2022 06:28:42 +1000
-    Ready:          True
-    Restart Count:  3
-    Limits:
-      memory:  170Mi
-    Requests:
-      cpu:        100m
-      memory:     70Mi
-    Liveness:     http-get http://:8080/health delay=60s timeout=5s period=10s #success=1 #failure=5
-    Readiness:    http-get http://:8181/ready delay=0s timeout=1s period=10s #success=1 #failure=3
-    Environment:  <none>
-    Mounts:
-      /etc/coredns from config-volume (ro)
-      /var/run/secrets/kubernetes.io/serviceaccount from coredns-token-dwpds (ro)
-Conditions:
-  Type              Status
-  Initialized       True 
-  Ready             True 
-  ContainersReady   True 
-  PodScheduled      True 
-Volumes:
-  config-volume:
-    Type:      ConfigMap (a volume populated by a ConfigMap)
-    Name:      coredns
-    Optional:  false
-  coredns-token-dwpds:
-    Type:        Secret (a volume populated by a Secret)
-    SecretName:  coredns-token-dwpds
-    Optional:    false
-QoS Class:       Burstable
-Node-Selectors:  kubernetes.io/os=linux
-Tolerations:     CriticalAddonsOnly op=Exists
-                 node-role.kubernetes.io/control-plane:NoSchedule
-                 node-role.kubernetes.io/master:NoSchedule
-                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:          <none>
-
-
-```
-
-#### nslookup    
-
-Create a pod from where we can run `nslookup` command.    
-```
-$ cat busybox.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: busybox
-  namespace: default
-spec:
-  containers:
-  - name: busy
-    image: busybox
-    command:
-      - sleep
-      - "3600" 
-
-$ kubectl create -f busybox.yaml
-pod/busybox created
-
-```
-
-Check existing services
-```
-[junsulee@fedora kubernetes]$ kubectl get svc -o wide
-NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE    SELECTOR
-kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   125d   <none>
-```
-
-`nslookup`      
-```
-[junsulee@fedora kubernetes]$ kubectl exec -it busybox -- nslookup kubernetes
-Server:		10.96.0.10   (?) <===== what's the IP ?    
-Address:	10.96.0.10:53
-
-Name:	kubernetes.default.svc.cluster.local
-Address: 10.96.0.1      <=====
-
-*** Can't find kubernetes.svc.cluster.local: No answer
-*** Can't find kubernetes.cluster.local: No answer
-*** Can't find kubernetes.default.svc.cluster.local: No answer
-*** Can't find kubernetes.svc.cluster.local: No answer
-*** Can't find kubernetes.cluster.local: No answer
-
-```
-
-K8s automatically adds DNS to pods.     
-```
-$ kubectl exec -it busybox -- cat /etc/resolv.conf
-nameserver 10.96.0.10
-search default.svc.cluster.local svc.cluster.local cluster.local
-options ndots:5
-```
-
-Example from an OCP.    
-```
-root@bastion ~]# kubectl exec -it c-db2oltp-1655862364134421-db2u-0 cat /etc/resolv.conf
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
-search sandy.svc.cluster.local svc.cluster.local cluster.local js.ocp.adl
-nameserver 136.32.0.10
-options ndots:2
-```
-
-#### Ingress
-
-- HTTP/HTTPS
-- Services get externally reachable URLs
-- can load balance
-- can take care of TLS/SSL termination.   
-- Needs an Ingress Controller to do the work.     
-
-> Other services types are exposed using the `NodePort` or `LoadBalancer` Service type.     
-
-
-Enable ingress.   
-
-```
-$ minikube addons list
-|-----------------------------|----------|--------------|
-|         ADDON NAME          | PROFILE  |    STATUS    |
-|-----------------------------|----------|--------------|
-| ambassador                  | minikube | disabled     |
-| auto-pause                  | minikube | disabled     |
-| csi-hostpath-driver         | minikube | disabled     |
-| dashboard                   | minikube | enabled ✅   |
-| default-storageclass        | minikube | enabled ✅   |
-| efk                         | minikube | disabled     |
-| freshpod                    | minikube | disabled     |
-| gcp-auth                    | minikube | disabled     |
-| gvisor                      | minikube | disabled     |
-| helm-tiller                 | minikube | disabled     |
-| ingress                     | minikube | disabled     |
-| ingress-dns                 | minikube | disabled     |
-| istio                       | minikube | disabled     |
-| istio-provisioner           | minikube | disabled     |
-| kubevirt                    | minikube | disabled     |
-| logviewer                   | minikube | disabled     |
-| metallb                     | minikube | disabled     |
-| metrics-server              | minikube | disabled     |
-| nvidia-driver-installer     | minikube | disabled     |
-| nvidia-gpu-device-plugin    | minikube | disabled     |
-| olm                         | minikube | disabled     |
-| pod-security-policy         | minikube | disabled     |
-| registry                    | minikube | disabled     |
-| registry-aliases            | minikube | disabled     |
-| registry-creds              | minikube | disabled     |
-| storage-provisioner         | minikube | enabled ✅   |
-| storage-provisioner-gluster | minikube | disabled     |
-| volumesnapshots             | minikube | disabled     |
-|-----------------------------|----------|--------------|
-
-[junsulee@fedora kubernetes]$ minikube addons enable ingress
-  - Using image k8s.gcr.io/ingress-nginx/controller:v0.44.0
-  - Using image docker.io/jettech/kube-webhook-certgen:v1.5.1
-  - Using image docker.io/jettech/kube-webhook-certgen:v1.5.1
-* Verifying ingress addon...
-* The 'ingress' addon is enabled
-
-[junsulee@fedora kubernetes]$ minikube addons enable ingress-dns
-  - Using image cryptexlabs/minikube-ingress-dns:0.3.0
-* The 'ingress-dns' addon is enabled
-[junsulee@fedora kubernetes]$ minikube addons list
-|-----------------------------|----------|--------------|
-|         ADDON NAME          | PROFILE  |    STATUS    |
-|-----------------------------|----------|--------------|
-| ambassador                  | minikube | disabled     |
-| auto-pause                  | minikube | disabled     |
-| csi-hostpath-driver         | minikube | disabled     |
-| dashboard                   | minikube | enabled ✅   |
-| default-storageclass        | minikube | enabled ✅   |
-| efk                         | minikube | disabled     |
-| freshpod                    | minikube | disabled     |
-| gcp-auth                    | minikube | disabled     |
-| gvisor                      | minikube | disabled     |
-| helm-tiller                 | minikube | disabled     |
-| ingress                     | minikube | enabled ✅   |
-| ingress-dns                 | minikube | enabled ✅   |
-| istio                       | minikube | disabled     |
-| istio-provisioner           | minikube | disabled     |
-| kubevirt                    | minikube | disabled     |
-| logviewer                   | minikube | disabled     |
-| metallb                     | minikube | disabled     |
-| metrics-server              | minikube | disabled     |
-| nvidia-driver-installer     | minikube | disabled     |
-| nvidia-gpu-device-plugin    | minikube | disabled     |
-| olm                         | minikube | disabled     |
-| pod-security-policy         | minikube | disabled     |
-| registry                    | minikube | disabled     |
-| registry-aliases            | minikube | disabled     |
-| registry-creds              | minikube | disabled     |
-| storage-provisioner         | minikube | enabled ✅   |
-| storage-provisioner-gluster | minikube | disabled     |
-| volumesnapshots             | minikube | disabled     |
-|-----------------------------|----------|--------------|
-
-```
-
-Create ingress controller.     
-```
-$ cat nginx-in2.yaml
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: nginx-ingress
-  annotations:
-    ingress.kubernetes.io/rewrite-target: /
-spec:
-  rules:
-  - host:
-    http:
-      paths:
-      - path: /nginxserver
-        backend:
-          serviceName: nginx-dash
-          servicePort: 80
-
-[junsulee@fedora kubernetes]$ kubectl create -f nginx-in2.yaml
-Warning: extensions/v1beta1 Ingress is deprecated in v1.14+, unavailable in v1.22+; use networking.k8s.io/v1 Ingress
-ingress.extensions/nginx-ingress created
-```
-
-Normal Ingress example.  
-
-```
-$ cat ingress-virtual-hosting.yaml
-apiVersion: networking.k8s.io/v1beta1
-kind: Ingress
-metadata:
-  name: name-virtual-host-ingress
-spec:
-  rules:
-  - host: first.bar.com     ## <=== DNS should know about this     
-    http:
-      paths:
-      - backend:
-          serviceName: service1
-          servicePort: 80
-  - host: second.foo.com
-    http:
-      paths:
-      - backend:
-          serviceName: service2
-          servicePort: 80
-  - http:
-      paths:
-      - backend: 
-          serviceName: service3
-          servicePort: 80
-```
-
-#### Lab 6 Exposing Pods     
-
-

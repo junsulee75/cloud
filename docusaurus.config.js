@@ -5,7 +5,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 (module.exports = {
   title: 'JS Cloud notes',
-  tagline: 'Personal cloud related notes',
+  tagline: 'Personal cloud related notes/drafts. Opinions are my own.  ',
   url: 'https://junsulee75.github.io',
   baseUrl: '/cloud/',
   onBrokenLinks: 'throw',
@@ -53,12 +53,12 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             position: 'left',
             label: 'Notes',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          /*{to: '/blog', label: 'Blog', position: 'left'},
           {
             href: 'https://github.com/facebook/docusaurus',
             label: 'GitHub',
             position: 'right',
-          },
+          },*/
         ],
       },
       footer: {
@@ -68,11 +68,11 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
+                label: 'Notes',
                 to: '/docs/intro',
               },
             ],
-          },
+          },/*
           {
             title: 'Community',
             items: [
@@ -102,9 +102,9 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                 href: 'https://github.com/facebook/docusaurus',
               },
             ],
-          },
+          },*/
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Jun Su Lee. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
@@ -115,6 +115,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
     themes: [
       // ... Your other themes.
+      // Search plug-in  
       [
         require.resolve("@easyops-cn/docusaurus-search-local"),
         {
