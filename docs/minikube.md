@@ -1711,4 +1711,105 @@ spec:
 
 #### Lab 6 Exposing Pods     
 
+Create a pod.   
+```
+$ cat lab6_nginx_pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lab6-nginx-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+[junsulee@fedora kubernetes]$ kubectl create -f lab6_nginx_pod.yaml
+pod/lab6-nginx-pod created
+
+$ kubectl get pods -o wide
+NAME                            READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+busybox                         1/1     Running   6          6h5m    172.17.0.9    minikube   <none>           <none>
+cmd-nginx-57bb5f6747-hznc7      1/1     Running   1          7d1h    172.17.0.5    minikube   <none>           <none>
+cmd-nginx-57bb5f6747-kmkjr      1/1     Running   1          7d      172.17.0.3    minikube   <none>           <none>
+lab5-nginx-7777d7964c-rkfz2     1/1     Running   0          26h     172.17.0.14   minikube   <none>           <none>
+lab5-nginx-7777d7964c-v9kn6     1/1     Running   0          26h     172.17.0.15   minikube   <none>           <none>
+lab6-nginx-pod                  1/1     Running   0          3m27s   172.17.0.13   minikube   <none>           <none>     <========
+redis-6fb5b985bc-s6gpq          1/1     Running   0          6d9h    172.17.0.8    minikube   <none>           <none>
+rollingnginx-7dbfcbddb7-rb5wk   1/1     Running   0          23h     172.17.0.12   minikube   <none>           <none>
+verybusy                        2/2     Running   50         25h     172.17.0.10   minikube   <none>           <none>
+[junsulee@fedora kubernetes]$ 
+
+```
+
+expose failure due to no label on the pod. 
+
+```
+$ kubectl expose pod lab6-nginx-pod --type=NodePort
+error: couldn't retrieve selectors via --selector flag or introspection: the pod has no labels and cannot be exposed
+See 'kubectl expose -h' for help and examples
+```
+
+Create again adding labels   
+
+```
+$ cat lab6_nginx_pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lab6-nginx-pod
+  labels:     ## added
+    name: lab6-nginx-pod   ## added
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
+$ kubectl create -f lab6_nginx_pod.yaml
+pod/lab6-nginx-pod created
+
+[junsulee@fedora kubernetes]$ kubectl get pods -o wide
+NAME                            READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+...
+lab6-nginx-pod                  1/1     Running   0          29s     172.17.0.13   minikube   <none>           <none>
+...
+
+$ kubectl get pods --show-labels
+NAME                            READY   STATUS    RESTARTS   AGE     LABELS
+...
+lab6-nginx-pod                  1/1     Running   0          2m9s    name=lab6-nginx-pod    <======================
+...
+``` 
+
+Expose again    
+
+```
+$ kubectl expose pod lab6-nginx-pod --type=NodePort --port=8080
+service/lab6-nginx-pod exposed
+
+[junsulee@fedora kubernetes]$ kubectl describe service lab6-nginx-pod
+Name:                     lab6-nginx-pod
+Namespace:                default
+Labels:                   name=lab6-nginx-pod
+Annotations:              <none>
+Selector:                 name=lab6-nginx-pod
+Type:                     NodePort
+IP Families:              <none>
+IP:                       10.100.194.64   => (?) what's this IP ? CLUSTER-IP 
+IPs:                      10.100.194.64
+Port:                     <unset>  8080/TCP
+TargetPort:               8080/TCP
+NodePort:                 <unset>  30390/TCP
+Endpoints:                172.17.0.13:8080
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
+
+$ kubectl get svc
+NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+...
+lab6-nginx-pod   NodePort    10.100.194.64   <none>        8080:30390/TCP   6m7s
+```
+
+
+
 

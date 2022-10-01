@@ -67,6 +67,9 @@ Kubenetes (aka k8s)
 ```
 kubectl create deployment -h  # help
 
+kubectl delete -f lab6_nginx_pod.yaml   # delete by file  
+
+
 # completion setting
 sudo yum install -y bash-completion
 kubectl completion -h
@@ -147,6 +150,8 @@ kubectl get all --selector app=cmd-nginx    # Display all objects with a specifi
 kubectl get all --show-lables
 ex) kubectl get all --selector app=db2oltp-1655862364134421
 
+# service
+kubectl expose deployment rollingnginx --port=80 --target-port=80
 
 ```
 
