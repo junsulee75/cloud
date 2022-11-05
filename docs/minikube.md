@@ -6,7 +6,7 @@ Starting `minikube` by `KVM` on the Fedora VM.
 
 
 ## Operations
-### Connect to minikube VM host
+### Connect to a host having minikube VM
 
 ```
 ssh junsulee@fedora # login to fedora VM
@@ -1531,7 +1531,7 @@ kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   125d   <none>
 `nslookup`      
 ```
 [junsulee@fedora kubernetes]$ kubectl exec -it busybox -- nslookup kubernetes
-Server:		10.96.0.10   (?) <===== what's the IP ?    
+Server:		10.96.0.10    <=== name server
 Address:	10.96.0.10:53
 
 Name:	kubernetes.default.svc.cluster.local
@@ -1545,7 +1545,7 @@ Address: 10.96.0.1      <=====
 
 ```
 
-K8s automatically adds DNS to pods.     
+K8s automatically adds DNS configuration to pods.     
 ```
 $ kubectl exec -it busybox -- cat /etc/resolv.conf
 nameserver 10.96.0.10
@@ -1663,7 +1663,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: nginx-ingress
-  annotations:
+  annotations:     ## comment filed 
     ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
@@ -1811,5 +1811,987 @@ lab6-nginx-pod   NodePort    10.100.194.64   <none>        8080:30390/TCP   6m7s
 ```
 
 
+### 07 Managing Pod Volumes
+
+#### Managing Pod Volumes    
+
+Create a pod using `emptyDir` type volumne.    
+That is temporary during pods's life time. See `kubectl explain pod.spec.volumes`.      
+
+```yaml
+$ cat volumes.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vol2
+spec:
+  containers:
+  - name: centos2
+    image: centos:7
+    command:
+      - sleep
+      - "3600"
+    volumeMounts:
+    - mountPath: /test
+      name: test
+  restartPolicy: Always
+  volumes:
+    - name: test
+      emptyDir: {}
+```
+```
+$ kubectl create -f volumes.yaml
+pod/vol2 created
+
+[junsulee@fedora kubernetes]$ kubectl get pod
+NAME   READY   STATUS              RESTARTS   AGE
+vol2   0/1     ContainerCreating   0          58s
+[junsulee@fedora kubernetes]$ kubectl get pod
+NAME   READY   STATUS              RESTARTS   AGE
+vol2   0/1     ContainerCreating   0          67s
+[junsulee@fedora kubernetes]$ kubectl get pod
+NAME   READY   STATUS    RESTARTS   AGE
+vol2   1/1     Running   0          2m16s
+```
+
+It created volume `test` with `emptyDir` type and mount it as `/test` new pod with `emptyDir` type.       
+```
+[junsulee@fedora kubernetes]$ kubectl describe pod vol2
+Name:         vol2
+Namespace:    default
+Priority:     0
+Node:         minikube/192.168.39.25
+Start Time:   Sat, 08 Oct 2022 16:50:50 +1100
+Labels:       <none>
+Annotations:  <none>
+Status:       Running
+IP:           172.17.0.6
+IPs:
+  IP:  172.17.0.6
+Containers:
+  centos2:
+    Container ID:  docker://1e6aba5fa4cf0a6f1f1f05a613b7ca98d548e37d106c01b13ac613c45d20da24
+    Image:         centos:7
+    Image ID:      docker-pullable://centos@sha256:c73f515d06b0fa07bb18d8202035e739a494ce760aa73129f60f4bf2bd22b407
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      sleep
+      3600
+    State:          Running
+      Started:      Sat, 08 Oct 2022 16:52:04 +1100
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /test from test (rw)     <=====
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-hfn84 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  test:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)         <=======
+    Medium:     
+    SizeLimit:  <unset>
+  default-token-hfn84:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-hfn84
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  2m51s  default-scheduler  Successfully assigned default/vol2 to minikube
+  Normal  Pulling    2m43s  kubelet            Pulling image "centos:7"
+  Normal  Pulled     103s   kubelet            Successfully pulled image "centos:7" in 1m0.434691784s
+  Normal  Created    99s    kubelet            Created container centos2
+  Normal  Started    97s    kubelet            Started container centos2
+```
+
+Create a test file into the pod.   
+
+```
+$ kubectl exec -it vol2 touch /test/testfile
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+$ kubectl exec -it vol2 -- ls -l /test/testfile
+-rw-r--r-- 1 root root 0 Oct  8 05:56 /test/testfile
+
+$ kubectl exec -it vol2 -- df -h
+Filesystem      Size  Used Avail Use% Mounted on
+overlay          17G  3.1G   13G  20% /
+tmpfs            64M     0   64M   0% /dev
+tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/vda1        17G  3.1G   13G  20% /test       <=======
+shm              64M     0   64M   0% /dev/shm
+tmpfs           2.0G   12K  2.0G   1% /run/secrets/kubernetes.io/serviceaccount
+tmpfs           2.0G     0  2.0G   0% /proc/acpi
+tmpfs           2.0G     0  2.0G   0% /proc/scsi
+tmpfs           2.0G     0  2.0G   0% /sys/firmware
+```
+
+Another example sharing a volume between containers.     
+
+```yaml
+$ cat morevolumes2.yaml
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: morevol2
+spec:
+  containers:
+  - name: centos1
+    image: centos:7
+    command:
+      - sleep
+      - "3600" 
+    volumeMounts:
+      - mountPath: /centos
+        name: test
+  - name: centos2
+    image: centos:7
+    command:
+      - sleep
+      - "3600"
+    volumeMounts:
+      - mountPath: /centos2
+        name: test
+  volumes: 
+    - name: test
+      emptyDir: {}
+
+
+$ kubectl create -f morevolumes2.yaml
+pod/morevol2 created
+
+$ kubectl exec -it morevol2 -c centos1 -- touch /centos/testfile
+$ kubectl exec -it morevol2 -c centos2 -- ls -l /centos2
+total 0
+-rw-r--r-- 1 root root 0 Oct  8 06:11 testfile
+```
+
+#### Using persistent volumes
+
+- Pod volumes depend on Pods
+- To have storage outlast a pod, the volume should connect to external storage    
+- This can be done from within the pod, but that would require the developer to know about storage specifics
+- To decouple storage requirements from Pod deployment, Persistent Volumes are offered.   
+- `PVC(PersistentVolumeClain)` is used by the user to claim storage in a declaritive way, without worrying about storage specifics.     
+- PVC is a k8s API object that has a spec that defines required storage properties.     
+- Based on properties, PVC will reach out to a PV to bind to specific storage     
+
+- PV is independent to pod.   <===>  PVC <===> Pod (has PVC to access to PV)    
+- PV and PVC has no direct relation.  Those are bound dynamically when necessary.           
+
+#### Setting up Pods to use PVs    
+
+Create a path to user in k8s host.    
+```
+[junsulee@fedora kubernetes]$ minikube ssh
+                         _             _
+            _         _ ( )           ( )
+  ___ ___  (_)  ___  (_)| |/')  _   _ | |_      __
+/' _ ` _ `\| |/' _ `\| || , <  ( ) ( )| '_`\  /'__`\
+| ( ) ( ) || || ( ) || || |\`\ | (_) || |_) )(  ___/
+(_) (_) (_)(_)(_) (_)(_)(_) (_)`\___/'(_,__/'`\____)
+
+$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           3.5G  679M  2.8G  20% /
+devtmpfs        1.9G     0  1.9G   0% /dev
+tmpfs           2.0G     0  2.0G   0% /dev/shm
+tmpfs           2.0G   10M  2.0G   1% /run
+tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
+tmpfs           2.0G  8.0K  2.0G   1% /tmp
+/dev/vda1        17G  3.0G   13G  19% /mnt/vda1
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/3804902e40974da784873de8cc87f9663936835fd66342e7d478acb258b57ab5/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/a9d3476fcbcadcf74f5fe1357fe7d650125359ccd051ec10dcfaa7271cd3c91e/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/218a54e89da72c4cd542ff0642d2925ce9588eddb66539ca7b64d96c6541a527/merged
+shm              64M     0   64M   0% /var/lib/docker/containers/11bca17f331e7eac01f2688d539ab7bde4dd2ea1837a581b7a3c96608814a23d/mounts/shm
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/9319c2770817c906dc6c34abcf70cf23a942de54d92496207b9f0e7cbecff392/merged
+shm              64M     0   64M   0% /var/lib/docker/containers/bf7004c93c9e9004f814c8861136e3d45356aa7e5444aa567533d1ce8ce3b494/mounts/shm
+shm              64M     0   64M   0% /var/lib/docker/containers/67274633884f3a7147b4d28902458934c79be094de9aaea988dca4d9bd455265/mounts/shm
+shm              64M     0   64M   0% /var/lib/docker/containers/2cd313fc6db7274f3655b2a9ecb13e9ee6e9e3ed109d0297c8f8dcc572db9c7d/mounts/shm
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/012b4b7b290bada7137b958631b82b3b363aedddf9d166acf7b8564f3e1f2980/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/68a47b0ea0762377dd7041d333a3fd24fd8b69d9905f58369d16af4fa834d822/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/a296b3f42291056f21dd01324318b6e0ea977ad642104b0d21c12a3bd98fac24/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/afbbc4dc554f04b2c397cdaa234eaa77e5ffe7d1a8137bec1e0c1e589016c3a5/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/530e131a26910f86adde91225019a65769fa5f65851655bfadafe9ab75e2b165/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/d7c775c6eeb2c235b4ec0e398ce88c7f99792e7e5b5ac19dd9c05d50f6ca6661/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/95a6e5438ccebe4a9c70b7a50e000d3d7fe4ba6542a0a2399d77e767320586e5/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/aae81a3b3a0aed9abd14b7beb324ad88370f8b18aed2f7b354687a0d308a1913/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/18766dfec9ef14802cad3dbda57e88265247e7e2f90ed05751a4bdbe2f053ba8/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/1237087f2076189f2dc657de8a33525e96c570d04a2b2cb0b9fcd15ba7941542/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/5a41bfe3d52ef14b86163ead4da4ea57e98d47c1c76c8dcb90f8344e3e59fd05/merged
+shm              64M     0   64M   0% /var/lib/docker/containers/6e0e72b562ce43064e1af0dab240b768e2f43adf1f56795ed8b6bc08ac246778/mounts/shm
+shm              64M     0   64M   0% /var/lib/docker/containers/56a46268fffea50b0a95fd6d444a38423fc6ce98b466fada4cf38dd4621f956b/mounts/shm
+shm              64M     0   64M   0% /var/lib/docker/containers/10171e7249f1fae755595aceed007b88ded4ecb0469954b098473f28f0b776b0/mounts/shm
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/a78e8fb8cd113c658c91f3d23d573c16d35a167cf1374864f080952ffb404c42/merged
+shm              64M     0   64M   0% /var/lib/docker/containers/58b20b522446c622e78ec329671216e6356c5036bf540548338453444b1e2e55/mounts/shm
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/f8c0f947209c52ee12bcbd366841af3a4a2163bf85905e124a8ed5e0ca09bf5c/merged
+shm              64M     0   64M   0% /var/lib/docker/containers/61286fe3865cff187090c9d74943bf56e42893a999a24afec52e969b845a914e/mounts/shm
+shm              64M     0   64M   0% /var/lib/docker/containers/62924c3743876e98a57b6062d2d00b73143368cdb48e7c892243eaffca2abb92/mounts/shm
+shm              64M     0   64M   0% /var/lib/docker/containers/75bab8180811c4a5a52ca65afba3c12b9f45f9716c1851acb2baba7b987de04c/mounts/shm
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/c41c288dc1cf61e622d42c60c7f4cffc936eafaeaf39b8095579ffbb27582560/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/03b099b772e9a08a19ac1cf19a919d7e428ed12737b011f4c28fe56fdcfe4dfb/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/2f80e54cd2fe733cf310e7a74be04b8fa5081d1508812c16943e8077460f1a77/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/1f2f9062c9e540c0d23f16cb6a85aaf8595e2b86f8aed0166f2a2096db7fde47/merged
+overlay          17G  3.0G   13G  19% /var/lib/docker/overlay2/ac2edc3273ed3c914b6e6a20328b19e521773564b896f096906b14368ee07eb0/merged
+$ sudo mkdir /mydata
+$ exit
+logout
+
+```
+
+Create a PV   
+```yaml
+[junsulee@fedora kubernetes]$ cat pv.yaml
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-volume
+  labels:
+      type: local
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mydata"
+[junsulee@fedora kubernetes]$ kubectl create -f pv.yaml
+persistentvolume/pv-volume created
+
+$ kubectl get pv
+NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+pv-volume   2Gi        RWO            Retain           Available                                   103s
+```
+
+Create a PVC.    
+It is going to look for any PV with the same accessMode , here `ReadWriteOnce` and bind.    
+
+```yaml
+[junsulee@fedora kubernetes]$ cat pvc.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+[junsulee@fedora kubernetes]$ kubectl create -f pvc.yaml
+persistentvolumeclaim/pv-claim created
+```
+
+PVC is bound to a volume name `pvc-xxx` and that is added checking with `kubectl get pv`.     
+
+```
+[junsulee@fedora kubernetes]$ kubectl get pvc
+NAME       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pv-claim   Bound    pvc-d54a5923-e241-43cc-b224-b7725d3b8c01   1Gi        RWO            standard       113s
+[junsulee@fedora kubernetes]$ kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM              STORAGECLASS   REASON   AGE
+pv-volume                                  2Gi        RWO            Retain           Available                                              6m57s
+pvc-d54a5923-e241-43cc-b224-b7725d3b8c01   1Gi        RWO            Delete           Bound       default/pv-claim   standard                115s
+```
+
+After the pod creation using the pvc, the mount is available.      
+ 
+```yaml
+[junsulee@fedora kubernetes]$ cat pv-pod.yaml
+kind: Pod
+apiVersion: v1
+metadata:
+   name: pv-pod
+spec:
+  volumes:
+    - name: pv-storage
+      persistentVolumeClaim:
+        claimName: pv-claim
+  containers:
+    - name: pv-container
+      image: nginx
+      ports:
+        - containerPort: 80
+          name: "http-server"
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: pv-storage
+[junsulee@fedora kubernetes]$
+[junsulee@fedora kubernetes]$ kubectl create -f pv-pod.yaml
+pod/pv-pod created
+
+[junsulee@fedora kubernetes]$ kubectl get pod
+NAME     READY   STATUS    RESTARTS   AGE
+pv-pod   1/1     Running   0          102s
+
+[junsulee@fedora kubernetes]$ kubectl describe pod pv-pod
+Name:         pv-pod
+Namespace:    default
+Priority:     0
+Node:         minikube/192.168.39.25
+Start Time:   Sat, 22 Oct 2022 14:03:52 +1100
+Labels:       <none>
+Annotations:  <none>
+Status:       Running
+IP:           172.17.0.6
+IPs:
+  IP:  172.17.0.6
+Containers:
+  pv-container:
+    Container ID:   docker://08efa2953f164c4a2271b52f8c7331fff37cf4aac6690ccd8ff3467908e159de
+    Image:          nginx
+    Image ID:       docker-pullable://nginx@sha256:5ffb682b98b0362b66754387e86b0cd31a5cb7123e49e7f6f6617690900d20b2
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Sat, 22 Oct 2022 14:05:10 +1100
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /usr/share/nginx/html from pv-storage (rw)      <=========
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-d6tbm (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  pv-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)     <=====
+    ClaimName:  pv-claim   <========
+    ReadOnly:   false
+  default-token-d6tbm:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-d6tbm
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  115s  default-scheduler  Successfully assigned default/pv-pod to minikube
+  Normal  Pulling    103s  kubelet            Pulling image "nginx"
+  Normal  Pulled     59s   kubelet            Successfully pulled image "nginx" in 44.215800653s
+  Normal  Created    41s   kubelet            Created container pv-container
+  Normal  Started    35s   kubelet            Started container pv-container
+``` 
+
+Above example is not realistic as we don't put a storage to a specific host only.    
+Here are example using a NFS mount path.    
+
+```yaml
+[junsulee@fedora kubernetes]$ cat nfs-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /data
+    server: 192.168.99.1
+    readOnly: false
+
+[junsulee@fedora kubernetes]$ cat nfs-pvc.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-pv-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+
+[junsulee@fedora kubernetes]$ cat nfs-pv-pod.yaml
+kind: Pod
+apiVersion: v1
+metadata:
+   name: nfs-pv-pod
+spec:
+  volumes:
+    - name: nfs-pv
+      persistentVolumeClaim:
+        claimName: nfs-pv-claim
+  containers:
+    - name: nfs-client1
+      image: centos:latest
+      command:
+        - sleep
+        - "3600"
+      volumeMounts:
+        - mountPath: "/nfsshare"
+          name: nfs-pv
+    - name: nfs-client2
+      image: centos:latest
+      command:
+        - sleep
+        - "3600"
+      volumeMounts:
+        - mountPath: "/nfsshare"
+          name: nfs-pv
+```
+
+#### Dynamic provisioning
+
+- PVs can be created manually or dynamically provisioned.   
+- To dynamically provision a PV, a StrageClass must be referred to in the PVC     
+- Storage classes are using classes that are defined by the administrator    
+- Storage classes are also using provisioners that connect to a specific storage type    
+- A default storage class can be used, alternatively storage classes can be defined manually       
+- A default StorageClass can be used to always specify a storage type so that it doesn't have to be defined in the PVC spec anymore.   
+- You'll find Default StorageClasses in specific Managed K8s environment, such as AKS.         
+- Custom StorageClass is used to define a StorageClass resource that binds to specific storage.     
+
+#### Using ConfigMaps   
+
+- Separate configuration from code
+- ConfigMaps are clear-text, Secrets are base64 encoded
+- Different types can be used : Files, Directories, Literals  
+- No matter which type is used, all the associated data is stored in the ConfigMap or Secret object
+- Secrets are mainly used to push variables.    
+
+Create a ConfigMap.   
+```yaml
+[junsulee@fedora kubernetes]$ cat nginx-custom-config.conf
+server {
+    listen       8888;
+    server_name  localhost;
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+}
+[junsulee@fedora kubernetes]$ kubectl create cm nginx-cm --from-file nginx-custom-config.conf
+configmap/nginx-cm created
+```
+
+In `data` section, the content is available.    
+```yaml
+[junsulee@fedora kubernetes]$ kubectl get cm nginx-cm -o yaml
+apiVersion: v1
+data:
+  nginx-custom-config.conf: |
+    server {
+        listen       8888;
+        server_name  localhost;
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2022-10-22T03:41:32Z"
+  name: nginx-cm
+  namespace: default
+  resourceVersion: "62148"
+  uid: fba3b2f1-b659-4284-bc2a-0ddad88e2fc2
+
+```
+
+Create a pod using the ConfigMap.   
+It is mounted as volumes.     
+It mounts the path `/etc/nginx/conf.d` with `conf` volume and create `default.conf` file under the path using the content of the ConfigMap `nginx-custom-config.conf`.     
+```yaml
+[junsulee@fedora kubernetes]$ cat nginx-cm.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-cm
+  labels:
+    role: web
+spec:
+  containers:
+  - name: nginx-cm
+    image: nginx
+    volumeMounts:
+    - name: conf
+      mountPath: /etc/nginx/conf.d
+  volumes:
+  - name: conf
+    configMap:
+      name: nginx-cm
+      items:
+      - key: nginx-custom-config.conf
+        path: default.conf
+```
+
+```
+[junsulee@fedora kubernetes]$ kubectl create -f nginx-cm.yml
+pod/nginx-cm created
+
+[junsulee@fedora kubernetes]$ kubectl exec -it nginx-cm -- cat /etc/nginx/conf.d/default.conf
+server {
+    listen       8888;
+    server_name  localhost;
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+}
+```
+
+
+#### Using Secret    
+- K8s automatically creates Secrets that contains credentials for accessing the API, and automatically modifies the Pods to use this type of Secret   
+- `kubectl describe pod <podname>` and look for the mount section to see them.   
+- While creating a secret, the next value must be base64 encoded
+- You can create a secret. When using `kubectl create secret` this is happening automatically.      
+
+- From Pods, Secrets are used in the wau that ConfigMaps are used.   
+- Mounted as volumes  
+- Imported as variables.    
+
+Create a secret.    
+```
+$ kubectl create secret generic secretstuff --from-literal=password=password --from-literal=user=linda
+secret/secretstuff created
+```
+
+The information is encoded.    
+```
+[junsulee@fedora kubernetes]$ kubectl get secret secretstuff
+NAME          TYPE     DATA   AGE
+secretstuff   Opaque   2      11m
+[junsulee@fedora kubernetes]$ kubectl get secret secretstuff -o yaml
+apiVersion: v1
+data:
+  password: cGFzc3dvcmQ=
+  user: bGluZGE=
+kind: Secret
+metadata:
+  creationTimestamp: "2022-10-22T04:20:07Z"
+  name: secretstuff
+  namespace: default
+  resourceVersion: "64064"
+  uid: e88c872d-f0c4-4768-9155-f654b9c5b6dd
+type: Opaque
+```
+
+Create a pod using the secret.   
+
+```yaml
+[junsulee@fedora kubernetes]$ cat pod-secret.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secretbox2
+  namespace: default
+spec:
+  containers:
+  - name: secretbox
+    image: busybox
+    command:
+      - sleep
+      - "3600"
+    volumeMounts:
+    - mountPath: /secretstuff
+      name: secret
+  volumes:
+  - name: secret
+    secret:
+      secretName: secretstuff
+
+
+[junsulee@fedora kubernetes]$ kubectl create -f pod-secret.yaml
+pod/secretbox2 created
+
+junsulee@fedora kubernetes]$ kubectl describe pod secretbox2
+Name:         secretbox2
+Namespace:    default
+Priority:     0
+Node:         minikube/192.168.39.25
+Start Time:   Sat, 22 Oct 2022 15:39:39 +1100
+Labels:       <none>
+Annotations:  <none>
+Status:       Running
+IP:           172.17.0.8
+IPs:
+  IP:  172.17.0.8
+Containers:
+  secretbox:
+    Container ID:  docker://0151e632b9a8a44e002ee5757a8dbfd7ecd46b32b96b702c9ff92fbd4a23a158
+    Image:         busybox
+    Image ID:      docker-pullable://busybox@sha256:9810966b5f712084ea05bf28fc8ba2c8fb110baa2531a10e2da52c1efc504698
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      sleep
+      3600
+    State:          Running
+      Started:      Sat, 22 Oct 2022 15:40:14 +1100
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /secretstuff from secret (rw)       <=====
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-d6tbm (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  secret:
+    Type:        Secret (a volume populated by a Secret)    <=====
+    SecretName:  secretstuff
+    Optional:    false
+  default-token-d6tbm:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-d6tbm
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  2m1s  default-scheduler  Successfully assigned default/secretbox2 to minikube
+  Normal  Pulling    109s  kubelet            Pulling image "busybox"
+  Normal  Pulled     95s   kubelet            Successfully pulled image "busybox" in 13.683200681s
+  Normal  Created    89s   kubelet            Created container secretbox
+  Normal  Started    86s   kubelet            Started container secretbox
+
+
+[junsulee@fedora kubernetes]$ kubectl get pod secretbox2 -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2022-10-22T04:39:39Z"
+  name: secretbox2
+  namespace: default
+  resourceVersion: "65060"
+  uid: 23afef33-efab-450a-ab2a-6824672106b0
+spec:
+  containers:
+  - command:
+    - sleep
+    - "3600"
+    image: busybox
+    imagePullPolicy: Always
+    name: secretbox
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /secretstuff      <=====
+      name: secret
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-d6tbm
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: minikube
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: secret      <======
+    secret:
+      defaultMode: 420
+      secretName: secretstuff
+  - name: default-token-d6tbm
+    secret:
+      defaultMode: 420
+      secretName: default-token-d6tbm
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T04:39:39Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T04:40:14Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T04:40:14Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T04:39:39Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://0151e632b9a8a44e002ee5757a8dbfd7ecd46b32b96b702c9ff92fbd4a23a158
+    image: busybox:latest
+    imageID: docker-pullable://busybox@sha256:9810966b5f712084ea05bf28fc8ba2c8fb110baa2531a10e2da52c1efc504698
+    lastState: {}
+    name: secretbox
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-10-22T04:40:14Z"
+  hostIP: 192.168.39.25
+  phase: Running
+  podIP: 172.17.0.8
+  podIPs:
+  - ip: 172.17.0.8
+  qosClass: BestEffort
+  startTime: "2022-10-22T04:39:39Z"
+```
+
+Check the file inside of the pod.    
+Once deployed, the value is shown as plain text.     
+
+```
+[junsulee@fedora kubernetes]$ kubectl exec -it secretbox2 -- /bin/sh
+/ # cat /secretstuff/password
+password/ #
+/ # cat /secretstuff/user
+linda/ #
+```
+
+**Another example using environment variable**  
+
+```yaml
+
+[junsulee@fedora kubernetes]$ kubectl create secret generic mysql --from-literal=password=root
+secret/mysql created
+[junsulee@fedora kubernetes]$ kubectl get secrets mysql -o yaml
+apiVersion: v1
+data:
+  password: cm9vdA==
+kind: Secret
+metadata:
+  creationTimestamp: "2022-10-22T05:33:48Z"
+  name: mysql
+  namespace: default
+  resourceVersion: "67694"
+  uid: 85635175-793d-43d6-8f98-d228a5ec4d4d
+type: Opaque
+[junsulee@fedora kubernetes]$ kubectl explain pod.spec.containers.env.valueFrom
+KIND:     Pod
+VERSION:  v1
+
+RESOURCE: valueFrom <Object>
+
+DESCRIPTION:
+     Source for the environment variable's value. Cannot be used if value is not
+     empty.
+
+     EnvVarSource represents a source for the value of an EnvVar.
+
+FIELDS:
+   configMapKeyRef	<Object>
+     Selects a key of a ConfigMap.
+
+   fieldRef	<Object>
+     Selects a field of the pod: supports metadata.name, metadata.namespace,
+     `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`, spec.nodeName,
+     spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+
+   resourceFieldRef	<Object>
+     Selects a resource of the container: only resources limits and requests
+     (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu,
+     requests.memory and requests.ephemeral-storage) are currently supported.
+
+   secretKeyRef	<Object>
+     Selects a key of a secret in the pod's namespace
+
+[junsulee@fedora kubernetes]$ cat pod-secret-as-var.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mymysql
+  namespace: default
+spec:
+  containers:
+  - name: mysql
+    image: mysql:latest
+    env:
+    - name: MYSQL_ROOT_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: mysql
+          key: password
+
+
+[junsulee@fedora kubernetes]$ kubectl create -f pod-secret-as-var.yaml
+pod/mymysql created
+[junsulee@fedora kubernetes]$ kubectl describe pod mymysql
+Name:         mymysql
+Namespace:    default
+Priority:     0
+Node:         minikube/192.168.39.25
+Start Time:   Sat, 22 Oct 2022 16:37:21 +1100
+Labels:       <none>
+Annotations:  <none>
+Status:       Pending
+IP:
+IPs:          <none>
+Containers:
+  mysql:
+    Container ID:
+    Image:          mysql:latest
+    Image ID:
+    Port:           <none>
+    Host Port:      <none>
+    State:          Waiting
+      Reason:       ContainerCreating
+    Ready:          False
+    Restart Count:  0
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'password' in secret 'mysql'>  Optional: false
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-d6tbm (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             False
+  ContainersReady   False
+  PodScheduled      True
+Volumes:
+  default-token-d6tbm:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-d6tbm
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  90s   default-scheduler  Successfully assigned default/mymysql to minikube
+  Normal  Pulling    76s   kubelet            Pulling image "mysql:latest"
+[junsulee@fedora kubernetes]$
+[junsulee@fedora kubernetes]$ kubectl get pod mymysql -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2022-10-22T05:37:21Z"
+  name: mymysql
+  namespace: default
+  resourceVersion: "67874"
+  uid: ea09c906-4347-4eb7-a617-837c34ffb530
+spec:
+  containers:
+  - env:
+    - name: MYSQL_ROOT_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: mysql
+    image: mysql:latest
+    imagePullPolicy: Always
+    name: mysql
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-d6tbm
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: minikube
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: default-token-d6tbm
+    secret:
+      defaultMode: 420
+      secretName: default-token-d6tbm
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T05:37:21Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T05:37:21Z"
+    message: 'containers with unready status: [mysql]'
+    reason: ContainersNotReady
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T05:37:21Z"
+    message: 'containers with unready status: [mysql]'
+    reason: ContainersNotReady
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-10-22T05:37:21Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - image: mysql:latest
+    imageID: ""
+    lastState: {}
+    name: mysql
+    ready: false
+    restartCount: 0
+    started: false
+    state:
+      waiting:
+        reason: ContainerCreating
+  hostIP: 192.168.39.25
+  phase: Pending
+  qosClass: BestEffort
+  startTime: "2022-10-22T05:37:21Z"
+```
+
+Environment variable is set in the pod.    
+
+```
+[junsulee@fedora kubernetes]$ kubectl exec -it mymysql -- /bin/bash
+bash-4.4# env |grep MYSQL_ROOT_PASSWORD
+MYSQL_ROOT_PASSWORD=root
+```
 
 
