@@ -1,4 +1,8 @@
-# Website
+# README
+
+
+[Red Hat Partner](https://partnercenter.redhat.com/Dashboard_page)  
+
 
 This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 

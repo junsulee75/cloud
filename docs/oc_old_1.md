@@ -1,29 +1,6 @@
-[Go to main page](https://github.ibm.com/junsulee/c)
 
-# oc
-
-Tips 
-
-
-## Contents
-
-- [oc](#oc)
-  - [Contents](#contents)
-- [Access information](#access-information)
-  - [Operations](#operations)
-    - [Login to openshift on server](#login-to-openshift-on-server)
-    - [Login using Openshift CLI](#login-using-openshift-cli)
-      - [Configuration](#configuration)
-    - [Showing service/ports/IP of pods](#showing-serviceportsip-of-pods)
-  - [MISC.](#misc)
-    - [`kubectl` vs `oc`](#kubectl-vs-oc)
-  - [oc commands](#oc-commands)
-    - [drain](#drain)
-  - [To check](#to-check)
-  - [References](#references)
-
-
-# Access information
+# Openshift
+## Access information
 
 OCP GUI Console :   
 User : kubeadmin
@@ -354,14 +331,10 @@ users:
     token: REDACTED
 ```
 
-[Go to content](#Contents)
-
 ### Showing service/ports/IP of pods
 ```
 oc get svc
 ```
-
-[Go to content](#Contents)
 
 ## MISC.   
 
@@ -383,8 +356,6 @@ oc get deploy
 > When creating services, firstly creating a `deployment`, then `pods`, then `service`.    
 And related service to deployment.      
 
-[Go to content](#Contents)
-
 ## oc commands
 ```
 oc whoami
@@ -403,22 +374,6 @@ openshift-image-registry               image-pruner       0 0 * * *      False  
 openshift-operator-lifecycle-manager   collect-profiles   */15 * * * *   False     0        100s            6h14m
 oc get sc -A
 ```
-
-### drain   
-
-The command below should force it to ignore those PDBs and continue with the drain. 
-
-```
-oc adm drain <node1> --ignore-daemonsets --delete-emptydir-data --force --disable-eviction
-```
-https://docs.openshift.com/container-platform/4.10/nodes/nodes/nodes-nodes-rebooting.html  
-
-
-Sometimes pods will become hung and unable to free up.  If you see that happening even with the `--disable-eviction`,    
-you may need to forcible terminate those pods.     
-The KCS below should help you handle those.     
-
-https://access.redhat.com/solutions/2317401    
 
 ## To check
 

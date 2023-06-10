@@ -2074,7 +2074,7 @@ pv-volume   2Gi        RWO            Retain           Available                
 ```
 
 Create a PVC.    
-It is going to look for any PV with the same accessMode , here `ReadWriteOnce` and bind.    
+**It is going to look for any PV with the same accessMode** , here `ReadWriteOnce` and bind.    
 
 ```yaml
 [junsulee@fedora kubernetes]$ cat pvc.yaml
@@ -2359,7 +2359,7 @@ server {
 - While creating a secret, the next value must be base64 encoded
 - You can create a secret. When using `kubectl create secret` this is happening automatically.      
 
-- From Pods, Secrets are used in the wau that ConfigMaps are used.   
+- From Pods, Secrets are used in the way that ConfigMaps are used.   
 - Mounted as volumes  
 - Imported as variables.    
 
