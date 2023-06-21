@@ -1,66 +1,11 @@
-# minikube
-
-Minikube related hands-on notes       
-
-## Contents
-- [minikube](#minikube)
-  - [Contents](#contents)
-  - [My minikube environment](#my-minikube-environment)
-    - [Windows](#windows)
-  - [Operations](#operations)
-    - [Connect to a host having minikube VM](#connect-to-a-host-having-minikube-vm)
-    - [start minikube](#start-minikube)
-  - [Troubleshooting](#troubleshooting)
-    - [Creating VM error](#creating-vm-error)
-      - [Error](#error)
-      - [Resolution](#resolution)
-    - [bad certificate](#bad-certificate)
-      - [Error](#error-1)
-      - [Resolution](#resolution-1)
-  - [Commands reference](#commands-reference)
-  - [System Outlook](#system-outlook)
-  - [Reference](#reference)
-  - [Lab](#lab)
-    - [02 Operating containers](#02-operating-containers)
-    - [04 Running an Application](#04-running-an-application)
-      - [Deleting pod/deployment](#deleting-poddeployment)
-      - [pod without a default command](#pod-without-a-default-command)
-      - [Naked pod : not managed by deployment](#naked-pod--not-managed-by-deployment)
-      - [Lab 4. Running an Application in Kubernetes](#lab-4-running-an-application-in-kubernetes)
-    - [05 Managing application](#05-managing-application)
-      - [Labels](#labels)
-      - [Running an application](#running-an-application)
-      - [namespace](#namespace)
-      - [managing scailability : num of replicas](#managing-scailability--num-of-replicas)
-      - [Managing application updates and rollbacks](#managing-application-updates-and-rollbacks)
-      - [Lab 05 Managing deployment](#lab-05-managing-deployment)
-    - [06 Exposing applications (Networking)](#06-exposing-applications-networking)
-      - [Expose a deployment](#expose-a-deployment)
-      - [Scaling the deployment will add IP Endpoints as PODs increases.](#scaling-the-deployment-will-add-ip-endpoints-as-pods-increases)
-      - [Using DNS in k8s.](#using-dns-in-k8s)
-      - [nslookup](#nslookup)
-      - [Ingress](#ingress)
-      - [Lab 6 Exposing Pods](#lab-6-exposing-pods)
-    - [07 Managing Pod Volumes](#07-managing-pod-volumes)
-      - [Managing Pod Volumes](#managing-pod-volumes)
-      - [Using persistent volumes](#using-persistent-volumes)
-      - [Setting up Pods to use PVs](#setting-up-pods-to-use-pvs)
-      - [Dynamic provisioning](#dynamic-provisioning)
-      - [Using ConfigMaps](#using-configmaps)
-      - [Using Secret](#using-secret)
-  - [test2](#test2)
+# minikube old
 
 ## My minikube environment
-
-### Windows
-On a ten years old Windows thinkpad laptop with 24 GB memory, `Fedora` VMware VM.     
+On an old Windows thinkpad laptop with 24 GB memory, `Fedora` VMware VM.     
 Starting `minikube` by `KVM` on the Fedora VM.     
 
-[Go to content](#Contents)
 
-## Operations  
-My daily operations such as starting minikube etc.    
-
+## Operations
 ### Connect to a host having minikube VM
 
 ```
@@ -126,8 +71,6 @@ X Problems detected in kubelet:
 * Enabled addons: default-storageclass, storage-provisioner
 * Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
 ```
-
-[Go to content](#Contents)
 
 ## Troubleshooting 
 ### Creating VM error 
@@ -2852,4 +2795,3 @@ MYSQL_ROOT_PASSWORD=root
 ```
 
 
-## test2
