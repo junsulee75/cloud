@@ -162,10 +162,10 @@ $ minikube_start
 ```
 #### Resolution 
 ```
-kubectl conf view
+kubectl config view
 kubectl config delete-cluster minikube
 minikube delete
-minikube_start
+minikube start --memory 4096 --vm-driver=kvm2
 ```
 
 ## Commands reference  
@@ -2851,5 +2851,9 @@ bash-4.4# env |grep MYSQL_ROOT_PASSWORD
 MYSQL_ROOT_PASSWORD=root
 ```
 
+[Go to content](#Contents)
 
 ## test2
+
+
+[Go to content](#Contents)

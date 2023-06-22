@@ -1,7 +1,27 @@
+[Go to main page](https://github.ibm.com/junsulee/c)
 
-# Kubenetes
+# kubenetes
 
-Kubenetes (aka k8s)    
+Kubenetes (aka k8s) .  
+
+## Contents
+
+- [kubenetes](#kubenetes)
+  - [Contents](#contents)
+  - [Terms](#terms)
+    - [Pods](#pods)
+    - [Replica/replica set](#replicareplica-set)
+    - [Deploymnet](#deploymnet)
+    - [namespace](#namespace)
+    - [Context](#context)
+    - [service](#service)
+  - [Reference](#reference)
+  - [Command Reference](#command-reference)
+    - [PD](#pd)
+    - [Operation](#operation)
+  - [yaml examples](#yaml-examples)
+    - [Simple](#simple)
+
 
 ## Terms 
 
@@ -39,7 +59,7 @@ Kubenetes (aka k8s)
 
 ### namespace
 - provide isolated environments in a k8s env.    
-- Makes sens in env. with multiple teams or projects.    
+- Makes sense in env. with multiple teams or projects.    
 - can use resource quota to divide cluster resources between users.   
 
 ### Context
@@ -64,6 +84,15 @@ Kubenetes (aka k8s)
 
 ## Command Reference     
 
+### PD
+
+For further debug and diagnose cluster problems    
+```
+kubectl cluster-info dump 
+```
+
+
+### Operation
 ```
 kubectl create deployment -h  # help
 
@@ -173,5 +202,4 @@ spec:
       - sleep
       - "3600"
 ```
-
 
