@@ -13,6 +13,7 @@ Tips
   - [Operations](#operations)
     - [Login to openshift on server](#login-to-openshift-on-server)
     - [Login using Openshift CLI](#login-using-openshift-cli)
+    - [Log into each node from bastion node](#log-into-each-node-from-bastion-node)
       - [Configuration](#configuration)
     - [Showing service/ports/IP of pods](#showing-serviceportsip-of-pods)
   - [MISC.](#misc)
@@ -27,7 +28,7 @@ Tips
 
 OCP GUI Console :   
 User : kubeadmin
-Find the password : cat /root/ocp46/auth/kubeadmin-password     
+Find the password : cat /root/ocp*/auth/kubeadmin-password     
 
 ## Operations
 ### Login to openshift on server 
@@ -300,7 +301,12 @@ replicaset.apps/nfs-client-provisioner-5596f5b9f8   1         1         1       
 ```
 
 
+### Log into each node from bastion node  
 
+```
+ssh code@node
+sudo su - 
+```
 
 #### Configuration   
 
