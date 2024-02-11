@@ -393,6 +393,7 @@ And related service to deployment.
 
 ## oc commands
 ```
+oc get pod -o wide -A   # detail pod info list  
 oc whoami
 oc get sub -A   
 oc get pvc -A
@@ -401,6 +402,7 @@ oc project <namespace name>   # namespace = project
 oc describe pod/c-db2ucluster-sample-instdb-sdsj4 
 oc get job
 
+
 oc get cronjob -A
 ex) 
 [root@api.jscp4d.cp.fyre.ibm.com util]# oc get cronjob -A
@@ -408,6 +410,7 @@ NAMESPACE                              NAME               SCHEDULE       SUSPEND
 openshift-image-registry               image-pruner       0 0 * * *      False     0        <none>          6h12m
 openshift-operator-lifecycle-manager   collect-profiles   */15 * * * *   False     0        100s            6h14m
 oc get sc -A
+oc get co
 ```
 
 ### drain   
