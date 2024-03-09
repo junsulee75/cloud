@@ -5,8 +5,8 @@ Minikube related hands-on notes
 ## Contents
 - [minikube](#minikube)
   - [Contents](#contents)
-  - [My minikube environment](#my-minikube-environment)
-    - [Windows](#windows)
+  - [minikube installation experience](#minikube-installation-experience)
+    - [Windows Laptop - VMWare - Fedora - KVM - minikube](#windows-laptop---vmware---fedora---kvm---minikube)
   - [Operations](#operations)
     - [Connect to a host having minikube VM](#connect-to-a-host-having-minikube-vm)
     - [start minikube](#start-minikube)
@@ -50,16 +50,16 @@ Minikube related hands-on notes
       - [Using Secret](#using-secret)
   - [test2](#test2)
 
-## My minikube environment
+## minikube installation experience
 
-### Windows
+### Windows Laptop - VMWare - Fedora - KVM - minikube   
 On a ten years old Windows thinkpad laptop with 24 GB memory, `Fedora` VMware VM.     
 Starting `minikube` by `KVM` on the Fedora VM.     
 
-[Go to content](#Contents)
+[Go to content](#contents)  
 
 ## Operations  
-My daily operations such as starting minikube etc.    
+Daily operations such as starting minikube etc.    
 
 ### Connect to a host having minikube VM
 
@@ -271,8 +271,7 @@ users:
 
 [Oreilly kubernetes education github repository](https://github.com/sandervanvugt/kubernetes)
 
-[KVM Virtualization on VMware 12](
-https://borysneselovskyi.wordpress.com/2018/02/19/kvm-virtualization-on-top-of-the-vmware-workstation-12-guest-vms/)
+[KVM Virtualization on VMware 12](https://borysneselovskyi.wordpress.com/2018/02/19/kvm-virtualization-on-top-of-the-vmware-workstation-12-guest-vms/)
 
 
 
